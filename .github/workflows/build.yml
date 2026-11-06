@@ -67,7 +67,7 @@ jobs:
           mkdir %QT_BUILD%
           cd /d %QT_BUILD%
 
-          %QT_SRC%\configure.bat ^
+          call %QT_SRC%\qtbase\configure.bat ^
             -prefix %QT_INSTALL% ^
             -static ^
             -static-runtime ^
