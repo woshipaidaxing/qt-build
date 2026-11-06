@@ -82,7 +82,7 @@ jobs:
             -nomake tests ^
             -confirm-license ^
             -opensource ^
-            -no-opengl ^
+            -no-opengl
             # -opengl desktop ^
 
       # ---------- 5. 编译（Build） & 安装（Install） ----------
