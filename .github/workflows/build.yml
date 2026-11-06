@@ -31,12 +31,12 @@ jobs:
         run: |
           $QT_ROOT = "${{ github.workspace }}\Qt"
           # 安装 MinGW 工具链（win64_mingw 对应 Qt 6 的 MinGW 版本）
-          python -m aqt install-tool windows desktop tools_mingw90 -O $QT_ROOT
+          python -m aqt install-tool windows desktop tools_mingw1310 -O $QT_ROOT
           # 安装 Ninja 构建工具
           python -m aqt install-tool windows desktop tools_ninja -O $QT_ROOT
 
           # 将 MinGW 和 Ninja 加入 PATH（供后续 configure/build 使用）
-          $MINGW_BIN = "$QT_ROOT\Tools\mingw1120_64\bin"
+          $MINGW_BIN = "$QT_ROOT\Tools\mingw1310_64\bin"
           $NINJA_BIN = "$QT_ROOT\Tools\Ninja"
           echo "$MINGW_BIN" >> $env:GITHUB_PATH
           echo "$NINJA_BIN" >> $env:GITHUB_PATH
@@ -80,7 +80,6 @@ jobs:
             -nomake tests ^
             -confirm-license ^
             -opensource ^
-            -skip webengine
 
       # ---------- 5. 编译（Build） & 安装（Install） ----------
       - name: Build & Install Qt Static
@@ -89,7 +88,7 @@ jobs:
           set QT_STATIC_BUILD=%GITHUB_WORKSPACE%\qt-build
           cd /d %QT_STATIC_BUILD%
 
-          cmake --build . --parallel %NUMBER_OF_PROCESSORS%
+          cmake --build . --parallel
           cmake --install .
 
       # ---------- 6. 上传静态库产物 ----------
