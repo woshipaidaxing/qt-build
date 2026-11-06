@@ -49,7 +49,6 @@ jobs:
 
           # install-src 用于下载源码，--archives 指定所需模块
           python -m aqt install-src windows desktop $QT_VERSION `
-            --archives qtbase qtdeclarative `
             -O $QT_ROOT
 
           # 确认源码目录
@@ -64,13 +63,12 @@ jobs:
           set QT_BUILD=%GITHUB_WORKSPACE%\qt-build
           set QT_INSTALL=%GITHUB_WORKSPACE%\qt-install
 
-          move %QT_SRC%\qtdeclarative %QT_SRC%\qtbase
-
           mkdir %QT_BUILD%
           cd /d %QT_BUILD%
 
-          %QT_SRC%\qtbase\configure.bat ^
+          %QT_SRC%\configure.bat ^
             -prefix %QT_INSTALL% ^
+            -submodules qtdeclarative ^
             -c++std c++20 ^
             -static ^
             -static-runtime ^
