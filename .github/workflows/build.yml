@@ -1,4 +1,4 @@
-name: Build Qt6 Static (MinGW, SQLite)
+name: Build Qt6 Static
 
 on:
   workflow_dispatch:  # 手动触发
@@ -45,7 +45,7 @@ jobs:
       - name: Download Qt Source (qtbase, qtdeclarative)
         run: |
           $QT_ROOT = "${{ github.workspace }}\Qt"
-          $QT_VERSION = "6.8.3"   # 可按需替换为其他 Qt 6 版本
+          $QT_VERSION = "6.10.1"   # 可按需替换为其他 Qt 6 版本
 
           # install-src 用于下载源码，--archives 指定所需模块
           python -m aqt install-src windows desktop $QT_VERSION `
