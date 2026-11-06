@@ -86,7 +86,7 @@ jobs:
       - name: Build & Install Qt Static
         shell: cmd
         run: |
-          set QT_BUILD=%GITHUB_WORKSPACE%\qt-build
+          set QT_BUILD=%GITHUB_WORKSPACE%\qt-static-build
           cd /d %QT_BUILD%
 
           cmake --build . --parallel %NUMBER_OF_PROCESSORS%
