@@ -64,6 +64,8 @@ jobs:
           set QT_BUILD=%GITHUB_WORKSPACE%\qt-build
           set QT_INSTALL=%GITHUB_WORKSPACE%\qt-install
 
+          move %QT_SRC%\qtdeclarative %QT_SRC%\qtbase
+
           mkdir %QT_BUILD%
           cd /d %QT_BUILD%
 
@@ -72,14 +74,15 @@ jobs:
             -static ^
             -static-runtime ^
             -release ^
-            -platform win32-g++ ^
-            -opengl desktop ^
-            -DFEATURE_sql_sqlite=ON ^
-            -DFEATURE_system_sqlite=OFF ^
+            -sql-sqlite ^
+            -sqlite qt ^
             -nomake examples ^
             -nomake tests ^
             -confirm-license ^
             -opensource ^
+            -no-opengl
+            # -platform win32-g++ ^
+            # -opengl desktop ^
 
       # ---------- 5. 编译（Build） & 安装（Install） ----------
       - name: Build & Install Qt Static
