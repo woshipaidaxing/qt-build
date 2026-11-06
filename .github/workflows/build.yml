@@ -1,0 +1,101 @@
+name: Build Qt6 Static (MinGW, SQLite)
+
+on:
+  workflow_dispatch:  # 手动触发
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-qt-static:
+    runs-on: windows-latest
+    timeout-minutes: 360  # Qt 源码编译耗时较长，设置 6 小时超时
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ---------- 1. 环境准备：Python & aqtinstall ----------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install aqtinstall
+        run: |
+          python -m pip install --upgrade pip
+          pip install aqtinstall
+
+      # ---------- 2. 安装 MinGW 工具链 & Ninja ----------
+      - name: Install MinGW & Ninja
+        run: |
+          $QT_ROOT = "${{ github.workspace }}\Qt"
+          # 安装 MinGW 工具链（win64_mingw 对应 Qt 6 的 MinGW 版本）
+          python -m aqt install-tool windows desktop tools_mingw90 -O $QT_ROOT
+          # 安装 Ninja 构建工具
+          python -m aqt install-tool windows desktop tools_ninja -O $QT_ROOT
+
+          # 将 MinGW 和 Ninja 加入 PATH（供后续 configure/build 使用）
+          $MINGW_BIN = "$QT_ROOT\Tools\mingw1120_64\bin"
+          $NINJA_BIN = "$QT_ROOT\Tools\Ninja"
+          echo "$MINGW_BIN" >> $env:GITHUB_PATH
+          echo "$NINJA_BIN" >> $env:GITHUB_PATH
+
+      # ---------- 3. 下载 Qt 源码（qtbase + qtdeclarative） ----------
+      - name: Download Qt Source (qtbase, qtdeclarative)
+        run: |
+          $QT_ROOT = "${{ github.workspace }}\Qt"
+          $QT_VERSION = "6.8.3"   # 可按需替换为其他 Qt 6 版本
+
+          # install-src 用于下载源码，--archives 指定所需模块
+          python -m aqt install-src windows desktop $QT_VERSION `
+            --archives qtbase qtdeclarative `
+            -O $QT_ROOT
+
+          # 确认源码目录
+          $SRC_DIR = Get-ChildItem -Path "$QT_ROOT\$QT_VERSION" -Directory | Select-Object -First 1
+          echo "SRC_DIR=$($SRC_DIR.FullName)" >> $env:GITHUB_ENV
+
+      # ---------- 4. 配置（Configure） ----------
+      - name: Configure Qt (Static, MinGW, SQLite)
+        shell: cmd
+        run: |
+          set QT_SRC=%SRC_DIR%
+          set QT_BUILD=%GITHUB_WORKSPACE%\qt-build
+          set QT_INSTALL=%GITHUB_WORKSPACE%\qt-install
+
+          mkdir %QT_BUILD%
+          cd /d %QT_BUILD%
+
+          call %QT_SRC%\configure.bat ^
+            -prefix %QT_INSTALL% ^
+            -static ^
+            -static-runtime ^
+            -release ^
+            -platform win32-g++ ^
+            -opengl desktop ^
+            -DFEATURE_sql_sqlite=ON ^
+            -DFEATURE_system_sqlite=OFF ^
+            -nomake examples ^
+            -nomake tests ^
+            -confirm-license ^
+            -opensource ^
+            -skip webengine
+
+      # ---------- 5. 编译（Build） & 安装（Install） ----------
+      - name: Build & Install Qt Static
+        shell: cmd
+        run: |
+          set QT_BUILD=%GITHUB_WORKSPACE%\qt-build
+          cd /d %QT_BUILD%
+
+          cmake --build . --parallel %NUMBER_OF_PROCESSORS%
+          cmake --install .
+
+      # ---------- 6. 上传静态库产物 ----------
+      - name: Upload Qt Static Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt6-static-mingw-${{ github.sha }}
+          path: ${{ github.workspace }}\qt-install
+          retention-days: 1
