@@ -67,7 +67,7 @@ jobs:
           mkdir %QT_BUILD%
           cd /d %QT_BUILD%
 
-          call %QT_SRC%\qtbase\configure.bat ^
+          %QT_SRC%\qtbase\configure.bat ^
             -prefix %QT_INSTALL% ^
             -static ^
             -static-runtime ^
@@ -86,7 +86,7 @@ jobs:
       - name: Build & Install Qt Static
         shell: cmd
         run: |
-          set QT_STATIC_BUILD=%QT_BUILD%
+          set QT_STATIC_BUILD=%GITHUB_WORKSPACE%\qt-build
           cd /d %QT_STATIC_BUILD%
 
           cmake --build . --parallel %NUMBER_OF_PROCESSORS%
